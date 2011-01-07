@@ -1,0 +1,28 @@
+<html>
+  <body>
+    <form action="/admin/x" method="post">
+    <table>
+      <tr><th>assassin name</th><th>alive</th><th>target</th></tr>
+      {% for assassin in assassins %}
+      <tr><td><a href="{{assassin.id|make_user_url}}">{{ assassin.user.nickname }}</a></td>
+	<td>
+	  <select name="{{ assassin.id }}_alive">
+	    <option  {% if assassin.alive %}selected="selected"{% endif %} value="true">Alive</option>
+	    <option {% if not assassin.alive %}selected="selected" {% endif %} value="">Dead</option>
+	  </select>
+	</td>
+	<td>
+	  <select name="{{ assassin.id }}_target">
+	  {% for target in assassins %}
+	  {% ifequal assassin.target.user_id target.id %}
+	  <option selected="selected" value="{{ target.id }}">{{ target.user.nickname }}</option>
+	  {% else %}
+	  <option value="{{ target.id }}">{{ target.user.nickname }}</option>
+	  {% endifequal %}
+	  {% endfor %}
+	  </select>
+      {% endfor %}
+    </table>
+    <input type="submit" value="Modify"/>
+    </form>
+</html>

@@ -1,0 +1,15 @@
+<html>
+  <body>
+    Thank you {{ name }} for playing.  Select your location
+    <form action="/create" method="post">
+      <select name="location">
+	<option value="mtview">Mt. View</option>
+	<option value="nyc">New York</option>
+	<option value="chicago">Chicago</option>
+	<option value="losangeles">Los Angeles</option>
+      </select>
+      <input type="submit" value="Register"/>
+    </form>
+    <a href={{ logout_url }}>Logout</a>
+  </body>
+</html>

@@ -1,0 +1,12 @@
+<html>
+  <body>
+    <form action="/guess" method="post">
+      Who do you think killed you?
+      <select name="assassin">
+	{% for target in assassins %}
+	<option value="{{ target.id }}">{{ target.user.nickname }}</option>
+	{% endfor %}
+      </select>
+      <input type="submit" value="Guess"/>
+    </form>
+</html>
