@@ -16,7 +16,7 @@ class DefaultHandler(webapp.RequestHandler):
     def get(self):
         q = db.GqlQuery("SELECT * FROM Assassin")
         results = q.fetch(100)
-        path = os.path.join(os.path.dirname(__file__), 'admin.html')
+        path = os.path.join(os.path.dirname(__file__), 'templates/admin.html')
         self.response.out.write(template.render(path, dict(assassins=results)))
 
 class ModifyHandler(webapp.RequestHandler):

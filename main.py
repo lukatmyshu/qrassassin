@@ -40,9 +40,18 @@ class GuessMyKillerHandler(webapp.RequestHandler):
         q = db.GqlQuery("SELECT * FROM Assassin WHERE alive = :1", True)
         results = q.fetch(100)
 
-        path = os.path.join(os.path.dirname(__file__), 'guess.html')
+        path = os.path.join(os.path.dirname(__file__), 'templates/guess.html')
         self.response.out.write(template.render(path, dict(assassins=results)))
-        
+
+    def post(self):
+        user = users.get_current_user()
+        assassin_id = self.request.get("assassin")
+        assassin = get_assassin_for_userid(assassin_id)
+        if assassin.target == user.userid():
+            #huzzah, the user guessed their assassin
+            path = os.path.join(os.path.dirname(__file__), 'templates/correct_guess.html')
+            self.response.out.write(template.render(path, dict(assassins=results)))
+       
 class DefaultHandler(webapp.RequestHandler):
     @util.login_required
     def get(self):
@@ -54,11 +63,11 @@ class DefaultHandler(webapp.RequestHandler):
         logout_url = users.create_logout_url("/")
         if results:
             #user already exists, just say you've already signed up
-            path = os.path.join(os.path.dirname(__file__), 'existing.html')
+            path = os.path.join(os.path.dirname(__file__), 'templates/existing.html')
             self.response.out.write(template.render(path, dict(logout_url=logout_url)))
 
         else:
-            path = os.path.join(os.path.dirname(__file__), 'signup.html')
+            path = os.path.join(os.path.dirname(__file__), 'templates/signup.html')
             self.response.out.write(template.render(path, dict(logout_url=logout_url, 
                                                                name=me.nickname())))
 
@@ -74,7 +83,7 @@ class CreateHandler(webapp.RequestHandler):
             assassin.put()
 
         qrcode_url = get_gchart_url(me.user_id(), self.request.url)
-        path = os.path.join(os.path.dirname(__file__), 'create.html')
+        path = os.path.join(os.path.dirname(__file__), 'templates/create.html')
         self.response.out.write(template.render(path, dict(name=me.nickname(), qrcode_url=qrcode_url)))
 
 class MainHandler(webapp.RequestHandler):
@@ -87,7 +96,7 @@ class MainHandler(webapp.RequestHandler):
         me = users.get_current_user()
         if me.user_id() == userid:
             #yourself, just go ahead and say something kitschy
-            path = os.path.join(os.path.dirname(__file__), 'init.html')
+            path = os.path.join(os.path.dirname(__file__), 'templates/init.html')
             self.response.out.write(template.render(path, dict(user=me)))
         else:
             #me just killed userid.  Enqueue a task item so we can notify them
@@ -102,7 +111,7 @@ class MainHandler(webapp.RequestHandler):
 
             #ensure that you've hit the right person
             if assassin.target.user_id() != userid:
-                path = os.path.join(os.path.dirname(__file__), 'wrong.html')
+                path = os.path.join(os.path.dirname(__file__), 'templates/wrong.html')
                 args = dict(name=me.nickname(), target_name=assassin.user.nickname())
                 self.response.out.write(template.render(path, args))
                 return
@@ -114,7 +123,7 @@ class MainHandler(webapp.RequestHandler):
                 logging.warn("No such user found ... how did that happen?")
             else:
                 target=results[0]
-                path = os.path.join(os.path.dirname(__file__), 'kill.html')
+                path = os.path.join(os.path.dirname(__file__), 'templates/kill.html')
                 args = dict(name=me.nickname(), target_name=target.user.nickname())
                 self.response.out.write(template.render(path, args))
 
@@ -136,15 +145,6 @@ class GenerateQRCode(webapp.RequestHandler):
 
         qrcode_url = get_gchart_url(userid, self.request.url)
         self.redirect(qrcode_url)
-
-    def post(self):
-        user = users.get_current_user()
-        assassin_id = self.request.get("assassin")
-        assassin = get_assassin_for_userid(assassin_id)
-        if assassin.target == user.userid():
-            #huzzah, the user guessed their assassin
-            path = os.path.join(os.path.dirname(__file__), 'guess.html')
-            self.response.out.write(template.render(path, dict(assassins=results)))
 
 def main():
     routes = [('/user/(.*)/(.*)', MainHandler),
